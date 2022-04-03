@@ -1,0 +1,126 @@
+Sub stock_data()
+
+'apply macro to every worksheet in the workbook
+
+For Each ws In Worksheets
+    ws.Activate
+    
+    'message box that says each tab has loaded the data
+    MsgBox (ws.Name)
+
+'create for loop to add column headers to each worksheet in the workbook
+
+
+    'create column named "Ticker", "Yearly Change", "Percent Change", and "Total Stock Volume" for each stock
+    Range("I1").Value = "Ticker"
+    Range("J1").Value = "Yearly Change"
+    Range("K1").Value = "Percent Change"
+    Range("L1").Value = "Total Stock Volume"
+    
+    'create variables
+
+    Dim volume As Double
+    Dim i As Long
+    Dim yearly_change As Single
+    Dim j As Integer
+    Dim start As Long
+    Dim lastrow As Long
+    Dim percentChange As Single
+
+
+    'initialize values
+    'iterator for ticker names
+    j = 0
+    'volume total
+    volume = 0
+    'yearly change
+    yearly_change = 0
+    'start at row 2
+    start = 2
+    
+    'find the last row to be counted
+    lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+    
+    'iterate through row 2 to lastrow
+    For i = 2 To lastrow
+    
+        'if the ticker is different from the row under it, print
+        If Cells(i + 1, "A").Value <> Cells(i, "A").Value Then
+        
+            'store the volume
+            volume = volume + Cells(i, "G").Value
+            
+            
+            'if the volume is 0
+            If volume = 0 Then
+                'print zeroes
+                Range("I" & 2 + j).Value = Cells(i, "G").Value
+                Range("J" & 2 + j).Value = 0
+                Range("K" & 2 + j).Value = "%" & 0
+                Range("L" & 2 + j).Value = 0
+            
+
+            Else
+            'find the first non zero opening price - will not be able to calculate % change if zero
+                If Cells(start, "C") = 0 Then
+                    For non_zero = start To i
+                        If Cells(non_zero, "C").Value <> 0 Then
+                            start = non_zero
+                            Exit For
+                        End If
+                    Next non_zero
+                End If
+            
+                'calculate the yearly change: last close minus first non-zero opening price
+                yearly_change = (Cells(i, "F") - Cells(start, "C"))
+                percentChange = yearly_change / Cells(start, "C")
+            
+                'go to the next ticker
+                start = i + 1
+            
+                'print the tickers data
+                Range("I" & 2 + j).Value = Cells(i, "A").Value
+                Range("J" & 2 + j).Value = yearly_change
+                Range("J" & 2 + j).NumberFormat = "0.00"
+                Range("K" & 2 + j).Value = percentChange
+                Range("K" & 2 + j).NumberFormat = "0.00%"
+                Range("L" & 2 + j).Value = volume
+                
+                
+                'conditional formatting for yearly change
+                If yearly_change > 0 Then
+                    Range("J" & 2 + j).Interior.ColorIndex = 4
+                ElseIf yearly_change < 0 Then
+                    Range("J" & 2 + j).Interior.ColorIndex = 3
+                Else
+                    Range("J" & 2 + j).Interior.ColorIndex = 0
+                End If
+                
+            End If
+            
+            'reset the variables for the next ticker
+            volume = 0
+            yearly_change = 0
+            j = j + 1
+            
+        'add the volume to the volume total if the ticker is the same
+        Else
+            volume = volume + Cells(i, "G").Value
+        End If
+             
+'end for loop for collecting and printing ticker data
+    Next i
+    
+    'find the greatest % change, lowest % change, and greatest volume
+    
+
+    
+'couldnt figure out how to get the max and min % change and the greatest volume - tried copying and pasting the solved code but it did not work
+
+'end for loop that goes through each sheet
+Next ws
+    
+'end subroutine
+End Sub
+
+
